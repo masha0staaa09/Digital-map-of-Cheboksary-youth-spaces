@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>CHEB-PLACE — Галерея</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+
+<header class="header">
+    <div class="container header-inner">
+        <div class="logo">CHEB-PLACE</div>
+        <nav class="nav">
+            <a href="index.html">Главная</a>
+            <a href="events.html">Мероприятия</a>
+            <a href="gallery.html">Галерея</a>
+            <a href="reviews.html">Отзывы</a>
+            <a href="contacts.html">Контакты</a>
+        </nav>
+    </div>
+</header>
+
+<main class="container">
+    <section class="section">
+        <h1>Галерея</h1>
+        <p>Раздел с фотографиями молодежных пространств и мероприятий.</p>
+
+        <div class="card form-card" style="margin-top: 16px;">
+            <h3>Добавить фотографию</h3>
+            <!--
+              Для простоты форма загружает файл в раздел "Общие".
+              Сервер сам создаст этот раздел, если его еще нет.
+            -->
+            <form id="gallery-form" enctype="multipart/form-data">
+                <label>
+                    Фотография
+                    <input type="file" name="file" accept="image/*" required>
+                </label>
+                <label>
+                    Название раздела (необязательно)
+                    <input type="text" name="section_name" placeholder="Например, Общие, Мероприятия...">
+                </label>
+                <button type="submit">Загрузить фото</button>
+                <p id="gallery-form-message" class="form-message"></p>
+            </form>
+        </div>
+
+        <h2 style="margin-top: 32px;">Фотографии</h2>
+        <p class="place-meta">
+            Фото сгруппированы по разделам. Раздел можно переименовать, а отдельные снимки удалить.
+        </p>
+        <div id="gallery-list" class="gallery"></div>
+    </section>
+</main>
+
+<footer class="footer">
+    <div class="container">
+        <p>Проект «CHEB-PLACE» — учебный проект цифровой карты молодежных пространств Чебоксар.</p>
+    </div>
+</footer>
+
+<script>
+async function fetchJSON(url) {
+    const res = await fetch(url);
+    if (!res.ok) {
+        throw new Error("Ошибка загрузки данных: " + res.status);
+    }
+    return await res.json();
+}
+
+async function loadGallery() {
+    const container = document.getElementById("gallery-list");
+    container.innerHTML = "";
+    try {
+        const sections = await fetchJSON("/gallery");
+        if (!sections.length) {
+            container.textContent = "Галерея пока пуста.";
+            return;
+        }
+        sections.forEach(sec => {
+            const wrap = document.createElement("div");
+            wrap.className = "gallery-section";
+
+            const title = document.createElement("h3");
+            title.className = "gallery-title";
+            title.textContent = sec.name;
+
+            // Кнопка переименования раздела
+            const renameBtn = document.createElement("button");
+            renameBtn.type = "button";
+            renameBtn.textContent = "Переименовать раздел";
+            renameBtn.style.marginLeft = "8px";
+            renameBtn.addEventListener("click", () => renameSection(sec));
+
+            const header = document.createElement("div");
+            header.appendChild(title);
+            header.appendChild(renameBtn);
+            wrap.appendChild(header);
+
+            if (sec.photos && sec.photos.length) {
+                const photos = document.createElement("div");
+                photos.className = "gallery-photos";
+                sec.photos.forEach(ph => {
+                    const item = document.createElement("div");
+                    item.style.display = "flex";
+                    item.style.flexDirection = "column";
+                    item.style.alignItems = "flex-start";
+                    item.style.gap = "4px";
+
+                    const img = document.createElement("img");
+                    img.src = ph.url;
+                    img.alt = sec.name;
+                    img.loading = "lazy";
+                    item.appendChild(img);
+
+                    const del = document.createElement("button");
+                    del.type = "button";
+                    del.textContent = "Удалить фото";
+                    del.style.backgroundColor = "#e24c4c";
+                    del.addEventListener("click", () => deletePhoto(ph.id));
+
+                    item.appendChild(del);
+                    photos.appendChild(item);
+                });
+                wrap.appendChild(photos);
+            } else {
+                const empty = document.createElement("p");
+                empty.className = "place-meta";
+                empty.textContent = "Фото пока нет.";
+                wrap.appendChild(empty);
+            }
+
+            container.appendChild(wrap);
+        });
+    } catch (e) {
+        container.textContent = "Ошибка загрузки галереи.";
+        console.error(e);
+    }
+}
+
+function initGalleryForm() {
+    const form = document.getElementById("gallery-form");
+    const messageEl = document.getElementById("gallery-form-message");
+
+    form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        messageEl.textContent = "";
+        messageEl.className = "form-message";
+
+        const formData = new FormData(form);
+        if (!formData.get("section_name")) {
+            // По умолчанию используем раздел "Общие"
+            formData.set("section_name", "Общие");
+        }
+
+        try {
+            const res = await fetch("/gallery/upload", {
+                method: "POST",
+                body: formData
+            });
+            if (!res.ok) {
+                const data = await res.json().catch(() => ({}));
+                throw new Error(data.detail || "Ошибка загрузки фотографии");
+            }
+            await res.json();
+            messageEl.textContent = "Фотография добавлена в галерею.";
+            messageEl.classList.add("success");
+            form.reset();
+            await loadGallery();
+        } catch (err) {
+            console.error(err);
+            messageEl.textContent = err.message || "Произошла ошибка.";
+            messageEl.classList.add("error");
+        }
+    });
+}
+
+// Переименование раздела галереи
+async function renameSection(sec) {
+    const newName = prompt("Новое название раздела:", sec.name);
+    if (newName === null || !newName.trim()) return;
+    try {
+        const res = await fetch("/admin/gallery/sections/" + sec.id, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                "X-Admin-Key": "change-me-admin-key"
+            },
+            body: JSON.stringify({ name: newName.trim() })
+        });
+        if (!res.ok) {
+            const data = await res.json().catch(() => ({}));
+            throw new Error(data.detail || "Ошибка переименования раздела");
+        }
+        await loadGallery();
+    } catch (e) {
+        alert(e.message || "Не удалось переименовать раздел");
+        console.error(e);
+    }
+}
+
+// Удаление фотографии
+async function deletePhoto(id) {
+    if (!confirm("Удалить это фото из галереи?")) return;
+    try {
+        const res = await fetch("/admin/gallery/photos/" + id, {
+            method: "DELETE",
+            headers: {
+                "X-Admin-Key": "change-me-admin-key"
+            }
+        });
+        if (!res.ok) {
+            const data = await res.json().catch(() => ({}));
+            throw new Error(data.detail || "Ошибка удаления фотографии");
+        }
+        await loadGallery();
+    } catch (e) {
+        alert(e.message || "Не удалось удалить фотографию");
+        console.error(e);
+    }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    loadGallery();
+    initGalleryForm();
+});
+</script>
+
+</body>
+</html>
+

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>CHEB-PLACE — Контакты</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+
+<header class="header">
+    <div class="container header-inner">
+        <div class="logo">CHEB-PLACE</div>
+        <nav class="nav">
+            <a href="index.html">Главная</a>
+            <a href="events.html">Мероприятия</a>
+            <a href="gallery.html">Галерея</a>
+            <a href="reviews.html">Отзывы</a>
+            <a href="contacts.html">Контакты</a>
+        </nav>
+    </div>
+</header>
+
+<main class="container">
+    <section class="section">
+        <h1>Контакты</h1>
+        <p>Если у вас есть идеи по улучшению проекта или вы нашли ошибку, напишите нам.</p>
+
+        <div class="card form-card" style="margin-top: 16px;">
+            <h3>Форма обратной связи</h3>
+            <form id="feedback-form">
+                <label>
+                    Имя
+                    <input type="text" name="name" required>
+                </label>
+                <label>
+                    Контакт (почта, телефон или соцсети)
+                    <input type="text" name="contact">
+                </label>
+                <label>
+                    Сообщение
+                    <textarea name="message" rows="3" required></textarea>
+                </label>
+                <button type="submit">Отправить сообщение</button>
+                <p id="feedback-form-message" class="form-message"></p>
+            </form>
+        </div>
+    </section>
+</main>
+
+<footer class="footer">
+    <div class="container">
+        <p>Проект «CHEB-PLACE» — учебный проект цифровой карты молодежных пространств Чебоксар.</p>
+    </div>
+</footer>
+
+<script>
+function initFeedbackForm() {
+    const form = document.getElementById("feedback-form");
+    const messageEl = document.getElementById("feedback-form-message");
+
+    form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        messageEl.textContent = "";
+        messageEl.className = "form-message";
+
+        const payload = {
+            name: form.name.value,
+            contact: form.contact.value || null,
+            message: form.message.value
+        };
+
+        try {
+            const res = await fetch("/feedback", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify(payload)
+            });
+            if (!res.ok) {
+                const data = await res.json().catch(() => ({}));
+                throw new Error(data.detail || "Ошибка отправки сообщения");
+            }
+            await res.json();
+            messageEl.textContent = "Сообщение отправлено. Спасибо!";
+            messageEl.classList.add("success");
+            form.reset();
+        } catch (err) {
+            console.error(err);
+            messageEl.textContent = err.message || "Произошла ошибка.";
+            messageEl.classList.add("error");
+        }
+    });
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    initFeedbackForm();
+});
+</script>
+
+</body>
+</html>
+

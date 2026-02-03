@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>CHEB-PLACE — Отзывы</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+
+<header class="header">
+    <div class="container header-inner">
+        <div class="logo">CHEB-PLACE</div>
+        <nav class="nav">
+            <a href="index.html">Главная</a>
+            <a href="events.html">Мероприятия</a>
+            <a href="gallery.html">Галерея</a>
+            <a href="reviews.html">Отзывы</a>
+            <a href="contacts.html">Контакты</a>
+        </nav>
+    </div>
+</header>
+
+<main class="container">
+    <section class="section">
+        <h1>Отзывы</h1>
+        <p>Здесь можно прочитать мнения о локациях и оставить свой отзыв.</p>
+
+        <div class="card form-card" style="margin-top: 16px;">
+            <h3>Оставить отзыв</h3>
+            <form id="review-form" enctype="multipart/form-data">
+                <label>
+                    ID локации
+                    <!--
+                      Для простоты здесь вводится только числовой ID.
+                      Список локаций можно посмотреть на карте или получить через API /places.
+                    -->
+                    <input type="number" name="place_id" min="1" required>
+                </label>
+                <label>
+                    Имя (необязательно)
+                    <input type="text" name="author_name" placeholder="Аноним">
+                </label>
+                <label>
+                    Рейтинг (1–5)
+                    <input type="number" name="rating" min="1" max="5" required>
+                </label>
+                <label>
+                    Текст отзыва
+                    <textarea name="text" rows="3" required></textarea>
+                </label>
+                <label>
+                    Фото (до 5 файлов)
+                    <input type="file" name="files" accept="image/*" multiple>
+                </label>
+                <button type="submit">Отправить отзыв</button>
+                <p id="review-form-message" class="form-message"></p>
+            </form>
+        </div>
+
+        <h2 style="margin-top: 32px;">Одобренные отзывы по локации</h2>
+        <div class="card form-card">
+            <label>
+                ID локации для просмотра отзывов
+                <input type="number" id="reviews-place-id" min="1">
+            </label>
+            <button type="button" id="load-reviews-btn">Показать отзывы</button>
+        </div>
+
+        <div id="reviews-list" class="card-grid"></div>
+    </section>
+</main>
+
+<footer class="footer">
+    <div class="container">
+        <p>Проект «CHEB-PLACE» — учебный проект цифровой карты молодежных пространств Чебоксар.</p>
+    </div>
+</footer>
+
+<script>
+async function fetchJSON(url) {
+    const res = await fetch(url);
+    if (!res.ok) {
+        throw new Error("Ошибка загрузки данных: " + res.status);
+    }
+    return await res.json();
+}
+
+async function loadReviews(placeId) {
+    const container = document.getElementById("reviews-list");
+    container.innerHTML = "";
+    if (!placeId) {
+        container.textContent = "Введите ID локации и нажмите кнопку, чтобы увидеть отзывы.";
+        return;
+    }
+    try {
+        const reviews = await fetchJSON("/reviews?place_id=" + encodeURIComponent(placeId));
+        if (!reviews.length) {
+            container.textContent = "Для этой локации пока нет одобренных отзывов.";
+            return;
+        }
+        reviews.forEach(r => {
+            const card = document.createElement("div");
+            card.className = "card";
+
+            const title = document.createElement("h3");
+            title.textContent = r.author_name || "Аноним";
+
+            const rating = document.createElement("div");
+            rating.className = "rating";
+            rating.textContent = "★".repeat(r.rating);
+
+            const text = document.createElement("p");
+            text.textContent = r.text;
+
+            const meta = document.createElement("div");
+            meta.className = "place-meta";
+            meta.textContent = new Date(r.created_at).toLocaleString("ru-RU");
+
+            card.appendChild(title);
+            card.appendChild(rating);
+            card.appendChild(text);
+            card.appendChild(meta);
+
+            if (r.photos && r.photos.length) {
+                const photos = document.createElement("div");
+                photos.className = "gallery-photos";
+                r.photos.forEach(ph => {
+                    const img = document.createElement("img");
+                    img.src = ph.url;
+                    img.alt = "Фото отзыва";
+                    img.loading = "lazy";
+                    photos.appendChild(img);
+                });
+                card.appendChild(photos);
+            }
+
+            container.appendChild(card);
+        });
+    } catch (e) {
+        container.textContent = "Ошибка загрузки отзывов.";
+        console.error(e);
+    }
+}
+
+function initReviewForm() {
+    const form = document.getElementById("review-form");
+    const messageEl = document.getElementById("review-form-message");
+
+    form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        messageEl.textContent = "";
+        messageEl.className = "form-message";
+
+        const filesInput = form.querySelector('input[name="files"]');
+        if (filesInput.files.length > 5) {
+            messageEl.textContent = "Можно прикрепить не более 5 изображений.";
+            messageEl.classList.add("error");
+            return;
+        }
+
+        const formData = new FormData(form);
+
+        try {
+            const res = await fetch("/reviews", {
+                method: "POST",
+                body: formData
+            });
+            if (!res.ok) {
+                const data = await res.json().catch(() => ({}));
+                throw new Error(data.detail || "Ошибка отправки отзыва");
+            }
+            await res.json();
+            messageEl.textContent = "Отзыв отправлен и ожидает модерации.";
+            messageEl.classList.add("success");
+            const placeId = form.place_id.value;
+            if (placeId) {
+                document.getElementById("reviews-place-id").value = placeId;
+                await loadReviews(placeId);
+            }
+            form.reset();
+        } catch (err) {
+            console.error(err);
+            messageEl.textContent = err.message || "Произошла ошибка.";
+            messageEl.classList.add("error");
+        }
+    });
+}
+
+function initReviewsFilter() {
+    const btn = document.getElementById("load-reviews-btn");
+    const input = document.getElementById("reviews-place-id");
+    btn.addEventListener("click", () => {
+        const id = input.value;
+        loadReviews(id);
+    });
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    initReviewForm();
+    initReviewsFilter();
+    // По умолчанию просто подсказка
+    loadReviews(null);
+});
+</script>
+
+</body>
+</html>
+

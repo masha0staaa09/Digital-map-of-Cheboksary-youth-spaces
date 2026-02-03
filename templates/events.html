@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>CHEB-PLACE — Мероприятия</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+
+<header class="header">
+    <div class="container header-inner">
+        <div class="logo">CHEB-PLACE</div>
+        <nav class="nav">
+            <a href="index.html">Главная</a>
+            <a href="events.html">Мероприятия</a>
+            <a href="gallery.html">Галерея</a>
+            <a href="reviews.html">Отзывы</a>
+            <a href="contacts.html">Контакты</a>
+        </nav>
+    </div>
+</header>
+
+<main class="container">
+    <section class="section">
+        <h1>Мероприятия</h1>
+        <p>Здесь отображаются будущие события, связанные с молодежными пространствами города.</p>
+
+        <!-- Кнопка и форма добавления мероприятия -->
+        <div class="card form-card" style="margin-top: 16px;">
+            <h3>Добавить мероприятие</h3>
+            <!--
+              В реальном проекте такие формы должны быть защищены (админ-панель).
+              Здесь для учебных целей мы используем простой запрос к API.
+            -->
+            <form id="event-form">
+                <label>
+                    Заголовок
+                    <input type="text" name="title" required>
+                </label>
+                <label>
+                    Дата
+                    <input type="date" name="date" required>
+                </label>
+                <label>
+                    Краткое описание (одна строка)
+                    <input type="text" name="short_info" maxlength="255" required>
+                </label>
+                <label>
+                    URL обложки (необязательно)
+                    <input type="text" name="cover_url" placeholder="https://...">
+                </label>
+                <button type="submit">Сохранить мероприятие</button>
+                <p id="event-form-message" class="form-message"></p>
+            </form>
+        </div>
+
+        <h2 style="margin-top: 32px;">Список мероприятий</h2>
+        <p class="place-meta">
+            Ниже показаны все сохранённые мероприятия. Их можно редактировать или удалять
+            (для учебных целей действия доступны прямо с этой страницы).
+        </p>
+        <div id="events-list" class="card-grid"></div>
+    </section>
+</main>
+
+<footer class="footer">
+    <div class="container">
+        <p>Проект «CHEB-PLACE» — учебный проект цифровой карты молодежных пространств Чебоксар.</p>
+    </div>
+</footer>
+
+<script>
+// Простой помощник для запросов
+async function fetchJSON(url) {
+    const res = await fetch(url);
+    if (!res.ok) {
+        throw new Error("Ошибка загрузки данных: " + res.status);
+    }
+    return await res.json();
+}
+
+// Загрузка списка мероприятий
+async function loadEvents() {
+    const container = document.getElementById("events-list");
+    container.innerHTML = "";
+    try {
+        const events = await fetchJSON("/events");
+        if (!events.length) {
+            container.textContent = "Пока нет запланированных мероприятий.";
+            return;
+        }
+        events.forEach(ev => {
+            const card = document.createElement("div");
+            card.className = "card";
+
+            const title = document.createElement("h3");
+            title.textContent = ev.title;
+
+            const meta = document.createElement("div");
+            meta.className = "place-meta";
+            meta.textContent = new Date(ev.date).toLocaleDateString("ru-RU");
+
+            const info = document.createElement("p");
+            info.textContent = ev.short_info;
+
+            card.appendChild(title);
+            card.appendChild(meta);
+            card.appendChild(info);
+
+            if (ev.cover_url) {
+                const img = document.createElement("img");
+                img.src = ev.cover_url;
+                img.alt = "Обложка мероприятия";
+                img.style.maxWidth = "100%";
+                img.style.borderRadius = "8px";
+                card.appendChild(img);
+            }
+
+            // Кнопки редактирования и удаления
+            const actions = document.createElement("div");
+            actions.style.marginTop = "8px";
+
+            const editBtn = document.createElement("button");
+            editBtn.type = "button";
+            editBtn.textContent = "Редактировать";
+            editBtn.style.marginRight = "8px";
+            editBtn.addEventListener("click", () => editEvent(ev));
+
+            const deleteBtn = document.createElement("button");
+            deleteBtn.type = "button";
+            deleteBtn.textContent = "Удалить";
+            deleteBtn.style.backgroundColor = "#e24c4c";
+            deleteBtn.style.marginTop = "4px";
+            deleteBtn.addEventListener("click", () => deleteEvent(ev.id));
+
+            actions.appendChild(editBtn);
+            actions.appendChild(deleteBtn);
+            card.appendChild(actions);
+
+            container.appendChild(card);
+        });
+    } catch (e) {
+        container.textContent = "Ошибка загрузки мероприятий.";
+        console.error(e);
+    }
+}
+
+// Редактирование мероприятия с помощью простых prompt-окон
+async function editEvent(ev) {
+    const title = prompt("Заголовок мероприятия:", ev.title);
+    if (title === null) return;
+    const date = prompt("Дата (ГГГГ-ММ-ДД):", ev.date);
+    if (date === null) return;
+    const shortInfo = prompt("Краткое описание (одна строка):", ev.short_info);
+    if (shortInfo === null) return;
+    const coverUrl = prompt("URL обложки (можно оставить пустым):", ev.cover_url || "");
+    if (coverUrl === null) return;
+
+    const payload = {
+        title: title,
+        date: date,
+        short_info: shortInfo,
+        cover_url: coverUrl || null
+    };
+
+    try {
+        const res = await fetch("/admin/events/" + ev.id, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                "X-Admin-Key": "change-me-admin-key"
+            },
+            body: JSON.stringify(payload)
+        });
+        if (!res.ok) {
+            const data = await res.json().catch(() => ({}));
+            throw new Error(data.detail || "Ошибка обновления мероприятия");
+        }
+        await loadEvents();
+    } catch (e) {
+        alert(e.message || "Не удалось обновить мероприятие");
+        console.error(e);
+    }
+}
+
+// Удаление мероприятия
+async function deleteEvent(id) {
+    if (!confirm("Удалить это мероприятие?")) return;
+    try {
+        const res = await fetch("/admin/events/" + id, {
+            method: "DELETE",
+            headers: {
+                "X-Admin-Key": "change-me-admin-key"
+            }
+        });
+        if (!res.ok) {
+            const data = await res.json().catch(() => ({}));
+            throw new Error(data.detail || "Ошибка удаления мероприятия");
+        }
+        await loadEvents();
+    } catch (e) {
+        alert(e.message || "Не удалось удалить мероприятие");
+        console.error(e);
+    }
+}
+
+// Отправка формы добавления мероприятия
+function initEventForm() {
+    const form = document.getElementById("event-form");
+    const messageEl = document.getElementById("event-form-message");
+
+    // Если на страницу пришли с карты, берем place_name из URL и подставим в описание
+    const params = new URLSearchParams(window.location.search);
+    const placeName = params.get("place_name");
+    if (placeName) {
+        form.short_info.value = "Мероприятие в локации: " + placeName;
+    }
+
+    form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        messageEl.textContent = "";
+        messageEl.className = "form-message";
+
+        const payload = {
+            title: form.title.value,
+            date: form.date.value,
+            short_info: form.short_info.value,
+            cover_url: form.cover_url.value || null
+        };
+
+        try {
+            const res = await fetch("/admin/events", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    // Для учебного проекта ключ просто зашит в код.
+                    "X-Admin-Key": "change-me-admin-key"
+                },
+                body: JSON.stringify(payload)
+            });
+            if (!res.ok) {
+                const data = await res.json().catch(() => ({}));
+                throw new Error(data.detail || "Ошибка сохранения мероприятия");
+            }
+            await res.json();
+            messageEl.textContent = "Мероприятие добавлено.";
+            messageEl.classList.add("success");
+            form.reset();
+            await loadEvents();
+        } catch (err) {
+            console.error(err);
+            messageEl.textContent = err.message || "Произошла ошибка.";
+            messageEl.classList.add("error");
+        }
+    });
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    loadEvents();
+    initEventForm();
+});
+</script>
+
+</body>
+</html>
+

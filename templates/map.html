@@ -9,44 +9,41 @@
 
 <header class="header">
     <div class="container header-inner">
-        <div class="logo">CHEB-PLACE</div>
+        <div class="logo">
+            <span class="logo-icon">
+                <span class="logo-pin"></span>
+            </span>
+            <span class="logo-text">CHEB-PLACE</span>
+        </div>
         <nav class="nav">
             <a href="index.html">Главная</a>
             <a href="events.html">Мероприятия</a>
-            <a href="gallery.html">Галерея</a>
             <a href="reviews.html">Отзывы</a>
+            <a href="gallery.html">Галерея</a>
             <a href="contacts.html">Контакты</a>
         </nav>
     </div>
 </header>
 
-<main class="container">
-    <section class="section">
-        <h1>Карта молодежных пространств Чебоксар</h1>
-        <p>
-            На карте отображаются локации из раздела &laquo;Карта&raquo; API.
-            При клике на метку можно перейти к созданию мероприятия для этой локации.
-        </p>
-        <!--
-          Упрощённый вариант карты: встроенная Google Карта Чебоксар через iframe.
-          Это не требует ключа API и надёжно работает в учебном проекте.
-        -->
-        <iframe
-            src="https://www.google.com/maps?q=56.1334,47.2511&z=12&output=embed"
-            width="100%"
-            height="480"
-            style="border:1px solid #e0e0ea;border-radius:12px;margin-top:16px;"
-            loading="lazy"
-            referrerpolicy="no-referrer-when-downgrade">
-        </iframe>
-    </section>
+<main class="map-full-wrapper">
+    <!-- Полноэкранная карта через iframe (без API-ключа) -->
+    <iframe
+        id="full-map"
+        src="https://www.google.com/maps?q=56.1334,47.2511&z=13&output=embed"
+        width="100%"
+        height="100%"
+        style="border:0;"
+        loading="lazy"
+        referrerpolicy="no-referrer-when-downgrade">
+    </iframe>
 </main>
 
-<footer class="footer">
-    <div class="container">
-        <p>Проект «CHEB-PLACE» — учебный проект цифровой карты молодежных пространств Чебоксар.</p>
-    </div>
-</footer>
+<!--
+  Здесь используется встроенный вариант Google Maps через iframe.
+  Он не требует API-ключа и надёжен для учебного проекта.
+  Если позже понадобится своя карта с несколькими точками,
+  можно создать "Мою карту" в Google Maps и вставить ссылку на неё в атрибут src.
+-->
 
 </body>
 </html>

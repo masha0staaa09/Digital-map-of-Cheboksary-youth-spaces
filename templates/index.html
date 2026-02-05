@@ -10,29 +10,145 @@
 <!-- Одна и та же шапка с меню на всех страницах -->
 <header class="header">
     <div class="container header-inner">
-        <div class="logo">CHEB-PLACE</div>
+        <div class="logo">
+            <span class="logo-icon">
+                <span class="logo-pin"></span>
+            </span>
+            <span class="logo-text">CHEB-PLACE</span>
+        </div>
         <nav class="nav">
             <a href="index.html">Главная</a>
             <a href="events.html">Мероприятия</a>
-            <a href="gallery.html">Галерея</a>
             <a href="reviews.html">Отзывы</a>
+            <a href="gallery.html">Галерея</a>
             <a href="contacts.html">Контакты</a>
         </nav>
     </div>
 </header>
 
 <main class="container">
-    <section class="section">
-        <h1>Цифровая карта молодежных пространств Чебоксар</h1>
-        <!-- Сразу показываем карту Чебоксар на главной странице -->
-        <iframe
-            src="https://www.google.com/maps?q=56.1334,47.2511&z=12&output=embed"
-            width="100%"
-            height="480"
-            style="border:1px solid #e0e0ea;border-radius:12px;margin-top:16px;"
-            loading="lazy"
-            referrerpolicy="no-referrer-when-downgrade">
-        </iframe>
+    <!-- 1. Краткое описание проекта (герой-блок) -->
+    <section class="hero">
+        <div class="hero-text">
+            <p class="hero-eyebrow">ЦИФРОВАЯ КАРТА</p>
+            <h1>МОЛОДЁЖНЫХ ПРОСТРАНСТВ ЧЕБОКСАР</h1>
+            <p>Все места для встреч, учёбы, творчества и мероприятий — на одной карте.</p>
+            <div class="hero-actions">
+                <a href="map.html" class="btn btn-primary">Открыть карту</a>
+                <a href="reviews.html" class="btn btn-ghost">Посмотреть отзывы</a>
+            </div>
+        </div>
+        <div class="hero-visual">
+            <!-- Превью карты через встроенный iframe (без API-ключа) -->
+            <div class="hero-map-preview">
+                <iframe
+                    src="https://www.google.com/maps?q=56.1334,47.2511&z=12&output=embed"
+                    width="100%"
+                    height="220"
+                    style="border:0; border-radius:12px;"
+                    loading="lazy"
+                    referrerpolicy="no-referrer-when-downgrade">
+                </iframe>
+                <button class="btn btn-primary hero-map-button"
+                        type="button"
+                        onclick="window.location.href='map.html'">
+                    Открыть карту на полный экран
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- 2. Блок «О проекте» -->
+    <section class="section" id="about">
+        <h2 class="section-title">О проекте</h2>
+        <p class="section-subtitle">
+            CHEB‑PLACE — простая цифровая карта молодежных локаций Чебоксар. Мы собираем места,
+            где можно работать над проектами, готовиться к сессии и проводить досуг.
+        </p>
+    </section>
+
+    <!-- 3. Блок «Для кого этот сайт» -->
+    <section class="section" id="for-who">
+        <h2 class="section-title">Для кого эта карта</h2>
+        <p class="section-subtitle">
+            Сервис ориентирован на активную молодёжь города, которая ищет «свои» места.
+        </p>
+        <div class="card-grid">
+            <div class="card">
+                <h3>Студенты и абитуриенты</h3>
+                <p>Где подготовиться к сессии, встретиться с одногруппниками, провести проектную встречу.</p>
+            </div>
+            <div class="card">
+                <h3>Школьники и кружки</h3>
+                <p>Локации для занятий, хакатонов, олимпиад и творческих мастерских.</p>
+            </div>
+            <div class="card">
+                <h3>Молодые специалисты</h3>
+                <p>Коворкинги и открытые пространства для работы, нетворкинга и встреч по интересам.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 4. Блок «Как пользоваться сайтом» -->
+    <section class="section" id="how">
+        <h2 class="section-title">Как пользоваться сайтом</h2>
+        <p class="section-subtitle">
+            Несколько простых шагов, чтобы найти подходящее место и запланировать мероприятие.
+        </p>
+        <div class="card-grid">
+            <div class="card">
+                <h3>1. Откройте карту</h3>
+                <p>Перейдите в раздел «Карта» и приблизьте нужный район города.</p>
+            </div>
+            <div class="card">
+                <h3>2. Выберите локацию</h3>
+                <p>Посмотрите описание пространства, удобства и отзывы других пользователей.</p>
+            </div>
+            <div class="card">
+                <h3>3. Запланируйте встречу</h3>
+                <p>Создайте мероприятие, поделитесь ссылкой с друзьями и приходите в выбранное место.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 5. Преимущества / возможности платформы -->
+    <section class="section" id="features">
+        <h2 class="section-title">Что даёт платформа CHEB‑PLACE</h2>
+        <p class="section-subtitle">
+            Мы собираем в одном месте разные форматы молодёжных активностей города.
+        </p>
+        <div class="card-grid">
+            <div class="card">
+                <h3>Единая карта пространств</h3>
+                <p>Коворкинги, библиотеки, антикафе, молодёжные центры и пространства при вузах.</p>
+            </div>
+            <div class="card">
+                <h3>Актуальные мероприятия</h3>
+                <p>События, лекции, мастер‑классы и встречи, привязанные к конкретным локациям.</p>
+            </div>
+            <div class="card">
+                <h3>Живые отзывы</h3>
+                <p>Истории и оценки от самих пользователей. Новые отзывы проходят премодерацию.</p>
+            </div>
+            <div class="card">
+                <h3>Галерея атмосферы</h3>
+                <p>Фотографии пространств и прошедших событий помогают почувствовать атмосферу заранее.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 6. Завершающий блок с кнопкой -->
+    <section class="section" id="cta">
+        <div class="card" style="text-align: center;">
+            <h2 class="section-title">Готовы исследовать молодёжные пространства Чебоксар?</h2>
+            <p class="section-subtitle">
+                Откройте карту, найдите своё место и присоединяйтесь к городским инициативам.
+            </p>
+            <div class="hero-actions" style="justify-content: center;">
+                <a href="map.html" class="btn btn-primary">Открыть карту</a>
+                <a href="events.html" class="btn btn-ghost">Перейти к мероприятиям</a>
+            </div>
+        </div>
     </section>
 </main>
 

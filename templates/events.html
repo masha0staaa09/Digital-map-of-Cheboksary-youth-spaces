@@ -9,12 +9,17 @@
 
 <header class="header">
     <div class="container header-inner">
-        <div class="logo">CHEB-PLACE</div>
+        <div class="logo">
+            <span class="logo-icon">
+                <span class="logo-pin"></span>
+            </span>
+            <span class="logo-text">CHEB-PLACE</span>
+        </div>
         <nav class="nav">
             <a href="index.html">Главная</a>
             <a href="events.html">Мероприятия</a>
-            <a href="gallery.html">Галерея</a>
             <a href="reviews.html">Отзывы</a>
+            <a href="gallery.html">Галерея</a>
             <a href="contacts.html">Контакты</a>
         </nav>
     </div>
@@ -23,9 +28,56 @@
 <main class="container">
     <section class="section">
         <h1>Мероприятия</h1>
-        <p>Здесь отображаются будущие события, связанные с молодежными пространствами города.</p>
+        <p>Следите за культурной и развлекательной жизнью Чебоксар: кино, театры, библиотеки и городские активности.</p>
 
-        <!-- Кнопка и форма добавления мероприятия -->
+        <!-- Блок категорий мероприятий в виде карточек -->
+        <div class="event-categories">
+            <!-- Категория «Кино» -->
+            <!-- Ссылка на афишу кино: https://afisha21.ru/kino/?ysclid=ml9b53x5lb761427821 -->
+            <a href="https://afisha21.ru/kino/?ysclid=ml9b53x5lb761427821"
+               class="event-category-card"
+               target="_blank"
+               rel="noopener noreferrer">
+                <div class="event-category-icon">🎬</div>
+                <div class="event-category-title">Кино</div>
+                <div class="event-category-subtitle">Новые фильмы и специальные показы.</div>
+            </a>
+
+            <!-- Категория «Театры» -->
+            <!-- Ссылка на афишу театров: https://afisha21.ru/teatr/?ysclid=ml9bujruc124914308 -->
+            <a href="https://afisha21.ru/teatr/?ysclid=ml9bujruc124914308"
+               class="event-category-card"
+               target="_blank"
+               rel="noopener noreferrer">
+                <div class="event-category-icon">🎭</div>
+                <div class="event-category-title">Театры</div>
+                <div class="event-category-subtitle">Спектакли, постановки и премьеры.</div>
+            </a>
+
+            <!-- Категория «Библиотеки» -->
+            <!-- Ссылка на библиотечные мероприятия: https://lib21.ru/page.php?target=post&category=2&ysclid=ml9bxm7lii347677505 -->
+            <a href="https://lib21.ru/page.php?target=post&category=2&ysclid=ml9bxm7lii347677505"
+               class="event-category-card"
+               target="_blank"
+               rel="noopener noreferrer">
+                <div class="event-category-icon">📚</div>
+                <div class="event-category-title">Библиотеки</div>
+                <div class="event-category-subtitle">Литературные вечера и клубы по интересам.</div>
+            </a>
+
+            <!-- Категория «Развлечения» -->
+            <!-- Ссылка на афиши активного отдыха и развлечений: https://afisha21.ru/active.htm?ysclid=ml9c1m4ddn165521245 -->
+            <a href="https://afisha21.ru/active.htm?ysclid=ml9c1m4ddn165521245"
+               class="event-category-card"
+               target="_blank"
+               rel="noopener noreferrer">
+                <div class="event-category-icon">🎡</div>
+                <div class="event-category-title">Развлечения</div>
+                <div class="event-category-subtitle">Катки, парки, лодочные станции и фестивали.</div>
+            </a>
+        </div>
+
+        <!-- Блок «Добавить мероприятие» остаётся рабочим и идёт ниже категорий -->
         <div class="card form-card" style="margin-top: 16px;">
             <h3>Добавить мероприятие</h3>
             <!--
